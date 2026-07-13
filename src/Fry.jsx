@@ -57,12 +57,11 @@ export function Fry({ name, geometry, material, home, index, isGolden, clickable
       delay: reduced ? 0.9 + index * 0.012 : 1.05 + index * 0.045 + seeded(index, 1) * 0.25,
       height,
       duration: Math.sqrt((2 * height) / GRAVITY),
-      // slight tilt drift while airborne — kept small so no fry swings
-      // outside the carton rim on the way down
+      // slight tilt drift while airborne — no spin, just a natural lean
       drift: new THREE.Euler(
-        (seeded(index, 3) - 0.5) * 0.1,
-        (seeded(index, 4) - 0.5) * 0.2,
-        (seeded(index, 5) - 0.5) * 0.1,
+        (seeded(index, 3) - 0.5) * 0.22,
+        (seeded(index, 4) - 0.5) * 0.3,
+        (seeded(index, 5) - 0.5) * 0.22,
       ),
       swayPhase: seeded(index, 6) * Math.PI * 2,
       swaySpeed: 0.7 + seeded(index, 7) * 0.5,

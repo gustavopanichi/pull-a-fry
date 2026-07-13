@@ -9,7 +9,6 @@ import { asset } from './asset'
 
 const SCALE = 20
 const FRY_SCALE = 1.44 // chunkier fries
-const MAX_FRIES = 32 // keep the pile airy — the widest extras get dropped
 const FRY_LIFT = 0.9 // raise the pile so the fries tower over the carton opening
 const CLICKABLE_COUNT = 7 // golden fry + 6 regular fortunes
 
@@ -51,7 +50,7 @@ export function FriesModel() {
     entries.sort((a, b) => a.objName.localeCompare(b.objName))
 
     // Re-pivot every fry at its own center so it can fall, lift and sway independently.
-    const allFries = entries.map((entry, i) => {
+    const fries = entries.map((entry, i) => {
       entry.geo.computeBoundingBox()
       const center = entry.geo.boundingBox.getCenter(new THREE.Vector3())
       entry.geo.translate(-center.x, -center.y, -center.z)
@@ -59,51 +58,12 @@ export function FriesModel() {
       const home = center.multiplyScalar(SCALE)
       home.y += FRY_LIFT
       home.z *= FRY_Z_SQUEEZE
-      entry.geo.computeBoundingBox()
       return {
         name: `fry_${String(i).padStart(2, '0')}`,
         geometry: entry.geo,
         home,
-        halfX: (entry.geo.boundingBox.max.x - entry.geo.boundingBox.min.x) / 2,
       }
     })
-
-    // Keep 32 fries: drop the widest sprawlers, which are the ones that poke
-    // past the carton rim.
-    const fries = [...allFries].sort((a, b) => a.halfX - b.halfX).slice(0, MAX_FRIES)
-
-    // Spread the fries apart so they don't merge into each other: iterative
-    // pair relaxation on the horizontal plane, clamped to the carton opening.
-    const MIN_SEP = 0.32
-    for (let iter = 0; iter < 30; iter++) {
-      for (let i = 0; i < fries.length; i++) {
-        for (let j = i + 1; j < fries.length; j++) {
-          const a = fries[i].home
-          const b = fries[j].home
-          let dx = b.x - a.x
-          let dz = b.z - a.z
-          let d = Math.hypot(dx, dz)
-          if (d < 1e-4) {
-            dx = seeded(i * 41 + j, 50) - 0.5
-            dz = seeded(i * 41 + j, 51) - 0.5
-            d = Math.hypot(dx, dz)
-          }
-          if (d < MIN_SEP) {
-            const push = ((MIN_SEP - d) / d) * 0.5
-            a.x -= dx * push
-            a.z -= dz * push
-            b.x += dx * push
-            b.z += dz * push
-          }
-        }
-      }
-      for (const f of fries) {
-        // keep the fry's whole silhouette inside the opening, not just its pivot
-        const lim = Math.max(0.2, 1.12 - f.halfX)
-        f.home.x = Math.max(-lim, Math.min(lim, f.home.x))
-        f.home.z = Math.max(-0.34, Math.min(0.34, f.home.z))
-      }
-    }
 
     // The fry poking highest out of the carton becomes the golden one.
     let golden = 0
