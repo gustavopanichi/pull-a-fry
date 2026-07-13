@@ -129,9 +129,10 @@ export function Fry({ name, geometry, material, home, index, isGolden, clickable
           t,
           x: m.position.x,
           z: Math.max(m.position.z, 1.6),
-          plane: new THREE.Plane(new THREE.Vector3(0, -1, 0), 1000),
+          planeL: new THREE.Plane(new THREE.Vector3(0, -1, 0), 1000),
+          planeR: new THREE.Plane(new THREE.Vector3(0, -1, 0), 1000),
         }
-        material.clippingPlanes = [a.eat.plane]
+        material.clippingPlanes = [a.eat.planeL, a.eat.planeR]
         material.clipShadows = true
       }
       const e = t - a.eat.t
@@ -145,13 +146,22 @@ export function Fry({ name, geometry, material, home, index, isGolden, clickable
       }
       // drop into frame while being eaten — the mouth is mid-screen
       easing.damp3(m.position, [a.eat.x, 4.2, a.eat.z], 0.16, dt)
-      // the cut line tracks the fry: each bite removes another third from the top
-      a.eat.plane.constant =
-        m.position.y + fryHeight / 2 - (bites * fryHeight) / 3 + fryHeight / 24
+      // Jagged chomp: two opposing tilted planes intersect at a ragged ridge
+      // that tracks the fry. The tilt and ridge offset change with every bite.
+      const cutY = m.position.y + fryHeight / 2 - (bites * fryHeight) / 3 + fryHeight / 20
+      const side = bites % 2 ? 1 : -1
+      const wob = seeded(index, 40 + bites)
+      const vx = m.position.x + side * (0.06 + wob * 0.1)
+      const vz = m.position.z
+      a.eat.planeL.normal.set(0.45 + wob * 0.25, -1, 0.22 * side).normalize()
+      a.eat.planeR.normal.set(-(0.4 + wob * 0.3), -1, -0.18 * side).normalize()
+      for (const p of [a.eat.planeL, a.eat.planeR]) {
+        p.constant = -(p.normal.x * vx + p.normal.y * cutY + p.normal.z * vz)
+      }
       // a little chomp jolt on every bite
       const bp = (e % BITE) / BITE
       const jolt = Math.exp(-bp * 7)
-      m.rotation.z += (bites % 2 ? 1 : -1) * jolt * 0.012
+      m.rotation.z += side * jolt * 0.012
       m.position.y += jolt * 0.01
       return
     }
@@ -183,24 +193,21 @@ export function Fry({ name, geometry, material, home, index, isGolden, clickable
         easing.damp3(m.position, tmpVec, isGolden ? 0.16 : 0.2, dt)
       }
       const tilt = isMobile ? -0.15 : -0.32
-      // full spin on the way up
+      // full spin on the way up, then a slow continuous turn while presented
       const riseSpin =
-        easeOutCubic(Math.min(Math.max(sp - 0.2, 0) / 0.9, 1)) * Math.PI * 2
+        easeOutCubic(Math.min(Math.max(sp - 0.2, 0) / 0.9, 1)) * Math.PI * 2 +
+        Math.max(sp - 1.2, 0) * 0.45
       if (isGolden) {
         const spinP = Math.min(Math.max(sp - 0.25, 0) / 1.3, 1)
         tmpEuler.set(
           tilt + Math.sin(t * 1.7) * 0.05,
-          easeOutCubic(spinP) * Math.PI * 4 + Math.sin(t * 1.3) * 0.1,
+          easeOutCubic(spinP) * Math.PI * 4 + Math.max(sp - 1.65, 0) * 0.45,
           0.08,
         )
         easing.dampE(m.rotation, tmpEuler, 0.12, dt)
         easing.damp(material, 'emissiveIntensity', 0.4 + Math.sin(t * 3) * 0.12, 0.15, dt)
       } else {
-        tmpEuler.set(
-          tilt + Math.sin(t * 1.7) * 0.05,
-          riseSpin + 0.15 + Math.sin(t * 1.3) * 0.07,
-          0.1,
-        )
+        tmpEuler.set(tilt + Math.sin(t * 1.7) * 0.05, riseSpin + 0.15, 0.1)
         easing.dampE(m.rotation, tmpEuler, 0.18, dt)
         easing.damp(material, 'emissiveIntensity', 0.22, 0.2, dt)
       }

@@ -122,36 +122,56 @@ export function Hud() {
   )
 }
 
+// Infinite marquee: the image strip is doubled and drifts sideways forever,
+// wrapping seamlessly. Hovering pauses the drift; arrows nudge along the loop.
 function Carousel({ images, url }) {
   const track = useRef(null)
-  const scroll = (dir) => {
+  const hovered = useRef(false)
+
+  useEffect(() => {
+    let raf
+    const step = () => {
+      const el = track.current
+      if (el && el.scrollWidth > el.clientWidth) {
+        const half = el.scrollWidth / 2
+        if (!hovered.current) el.scrollLeft += 0.6
+        if (el.scrollLeft >= half) el.scrollLeft -= half
+      }
+      raf = requestAnimationFrame(step)
+    }
+    raf = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(raf)
+  }, [])
+
+  const nudge = (dir) => {
     const el = track.current
     if (!el) return
-    const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 8
-    const atStart = el.scrollLeft <= 8
-    if (dir > 0 && atEnd) {
-      el.scrollTo({ left: 0, behavior: 'smooth' }) // loop back to the start
-    } else if (dir < 0 && atStart) {
-      el.scrollTo({ left: el.scrollWidth, behavior: 'smooth' }) // and vice versa
-    } else {
-      el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: 'smooth' })
-    }
+    const half = el.scrollWidth / 2
+    // pre-wrap so a backwards nudge never hits the hard left edge
+    if (dir < 0 && el.scrollLeft < el.clientWidth) el.scrollLeft += half
+    el.scrollBy({ left: dir * el.clientWidth * 0.6, behavior: 'smooth' })
   }
+
+  const strip = [...images, ...images]
   return (
-    <div className="carousel">
+    <div
+      className="carousel"
+      onMouseEnter={() => (hovered.current = true)}
+      onMouseLeave={() => (hovered.current = false)}
+    >
       <div className="carousel__track" ref={track}>
-        {images.map((src) => (
-          <a key={src} href={url} target="_blank" rel="noreferrer">
+        {strip.map((src, i) => (
+          <a key={src + i} href={url} target="_blank" rel="noreferrer">
             <img src={src} alt="" loading="lazy" draggable="false" />
           </a>
         ))}
       </div>
       {images.length > 1 && (
         <>
-          <button className="carousel__btn carousel__btn--prev" onClick={() => scroll(-1)} aria-label="Previous">
+          <button className="carousel__btn carousel__btn--prev" onClick={() => nudge(-1)} aria-label="Previous">
             ‹
           </button>
-          <button className="carousel__btn carousel__btn--next" onClick={() => scroll(1)} aria-label="Next">
+          <button className="carousel__btn carousel__btn--next" onClick={() => nudge(1)} aria-label="Next">
             ›
           </button>
         </>
@@ -202,17 +222,17 @@ export function FortuneModal() {
         <p className="modal__desc">{project.blurb}</p>
         <Carousel images={project.images} url={project.url} />
         <div className="modal__actions">
+          <button className="btn btn--primary" onClick={dismiss}>
+            Eat the fry
+          </button>
           <a
-            className="btn btn--primary"
+            className="btn btn--ghost"
             href={project.url}
             target="_blank"
             rel="noreferrer"
           >
             View full case study
           </a>
-          <button className="btn btn--ghost" onClick={dismiss}>
-            Eat the fry
-          </button>
         </div>
       </aside>
     </div>

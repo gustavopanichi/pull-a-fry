@@ -368,11 +368,15 @@ body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s;
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
 }
 
 .btn:active {
-  transform: translateY(2px);
+  transform: translateY(1px);
 }
 
 .btn--primary {
@@ -381,7 +385,7 @@ body {
 }
 
 .btn--primary:hover {
-  filter: brightness(1.35);
+  background: #33302a;
 }
 
 .btn--ghost {
@@ -390,9 +394,19 @@ body {
   border: 2px solid #000;
 }
 
+.btn--ghost:hover {
+  background: #000;
+  color: #fff;
+}
+
 .modal--gold .btn--ghost {
   color: var(--cream);
   border-color: var(--cream);
+}
+
+.modal--gold .btn--ghost:hover {
+  background: var(--cream);
+  color: #10131f;
 }
 
 .btn--refill {
@@ -406,7 +420,7 @@ body {
 }
 
 .btn--refill:hover {
-  filter: brightness(1.15);
+  background: #33302a;
 }
 
 /* ---------- Fortune modal ---------- */
@@ -561,7 +575,6 @@ body {
 
 .carousel__track a {
   flex: none;
-  scroll-snap-align: start;
   display: block;
 }
 
@@ -574,7 +587,6 @@ body {
   display: flex;
   gap: 10px;
   overflow-x: auto;
-  scroll-snap-type: x mandatory;
   border-radius: 14px;
   scrollbar-width: none;
 }
@@ -588,7 +600,6 @@ body {
   width: auto;
   max-width: none;
   flex: none;
-  scroll-snap-align: start;
   border-radius: 14px;
   background: rgba(39, 37, 31, 0.06);
   user-select: none;
@@ -622,8 +633,13 @@ body {
   right: 10px;
 }
 
+.carousel__btn {
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
 .carousel__btn:hover {
-  filter: brightness(1.05);
+  background: #fff;
+  transform: translateY(-50%) scale(1.12);
 }
 
 /* Golden / featured variant */
