@@ -28,6 +28,8 @@ export const useStore = create_((set, get) => ({
   refillKey: 0,
   hintDismissed: false,
   goldenFlash: 0,
+  saltShake: 0,
+  shakeSalt: () => set((s) => ({ saltShake: s.saltShake + 1 })),
 
   selectAt: 0,
   select: (name, isGolden) => {

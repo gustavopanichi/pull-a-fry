@@ -111,7 +111,7 @@ export function Hud() {
   return (
     <>
       <button className="btn btn--refill" onClick={refill}>
-        ↻ New batch
+        <span className="refill__icon">↻</span> New batch
       </button>
       {allFound && (
         <div className="finished">

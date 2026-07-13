@@ -200,7 +200,7 @@ body {
   top: clamp(14px, 2.6vh, 26px);
   left: 50%;
   transform: translateX(-50%);
-  z-index: 10;
+  z-index: 0; /* below the canvas so a pulled fry passes in front of the logos */
   display: flex;
   align-items: center;
   gap: 8px;
@@ -340,9 +340,8 @@ body {
 
 .finished {
   position: absolute;
-  left: 50%;
-  bottom: clamp(20px, 6vh, 48px);
-  transform: translateX(-50%);
+  right: clamp(18px, 3.5vw, 42px);
+  bottom: calc(clamp(16px, 3vh, 28px) + 62px);
   z-index: 10;
   background: var(--red);
   color: var(--cream);
@@ -350,7 +349,14 @@ body {
   padding: 12px 22px;
   font-weight: 400;
   box-shadow: 0 8px 22px rgba(163, 21, 16, 0.35);
-  animation: hint-in 0.5s ease backwards;
+  animation: finished-in 0.5s ease backwards;
+}
+
+@keyframes finished-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
 }
 
 /* ---------- Buttons ---------- */
@@ -385,7 +391,8 @@ body {
 }
 
 .btn--primary:hover {
-  background: #33302a;
+  background: var(--yellow);
+  color: #10131f;
 }
 
 .btn--ghost {
@@ -421,6 +428,15 @@ body {
 
 .btn--refill:hover {
   background: #33302a;
+}
+
+.refill__icon {
+  display: inline-block;
+  transition: transform 0.55s ease;
+}
+
+.btn--refill:hover .refill__icon {
+  transform: rotate(360deg);
 }
 
 /* ---------- Fortune modal ---------- */

@@ -26,6 +26,34 @@ export default function App() {
     return () => clearTimeout(id)
   }, [phase, friesCount])
 
+  // Easter egg: shake the mouse rapidly side to side → a pinch of salt falls.
+  useEffect(() => {
+    let lastX = null
+    let lastDir = 0
+    let flips = []
+    let cooldownUntil = 0
+    const onMove = (e) => {
+      const now = performance.now()
+      if (lastX !== null) {
+        const dx = e.clientX - lastX
+        if (Math.abs(dx) > 24) {
+          const dir = Math.sign(dx)
+          if (lastDir !== 0 && dir !== lastDir) flips.push(now)
+          lastDir = dir
+        }
+      }
+      lastX = e.clientX
+      flips = flips.filter((t) => now - t < 900)
+      if (flips.length >= 5 && now > cooldownUntil) {
+        cooldownUntil = now + 4000
+        flips = []
+        useStore.getState().shakeSalt()
+      }
+    }
+    window.addEventListener('pointermove', onMove)
+    return () => window.removeEventListener('pointermove', onMove)
+  }, [])
+
   if (!webgl) return <FallbackSite />
 
   const isTouch = window.matchMedia('(pointer: coarse)').matches

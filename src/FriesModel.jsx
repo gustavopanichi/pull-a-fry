@@ -90,6 +90,12 @@ export function FriesModel() {
       clickableSet.add(cand.i)
     }
 
+    // Bring the clickable fries toward the front of the pile so they're
+    // easier to spot and grab.
+    for (const i of clickableSet) {
+      fries[i].home.z = 0.12 + Math.abs(fries[i].home.z)
+    }
+
     // Four hero fries (the golden one + three spread-out fortunes) rise well
     // above the pile — tall enough to overlap the title lettering.
     const heroes = [golden]
@@ -151,6 +157,7 @@ export function FriesModel() {
     <group>
       <Carton />
       <Smoke />
+      <Salt />
       {model.fries.map((f, i) => (
         <Fry
           key={f.name}
@@ -274,6 +281,86 @@ function Smoke() {
         </sprite>
       ))}
     </group>
+  )
+}
+
+// Easter egg: a pinch of salt rains from the top of the screen into the
+// carton when the mouse is shaken side to side.
+const SALT_COUNT = 150
+function Salt() {
+  const saltShake = useStore((s) => s.saltShake)
+  const points = useRef()
+  const batch = useRef(null)
+
+  const grains = useMemo(
+    () =>
+      Array.from({ length: SALT_COUNT }, (_, i) => ({
+        x: (seeded(i, 70) - 0.5) * 1.9,
+        z: (seeded(i, 71) - 0.5) * 0.6,
+        y0: 6.8 + seeded(i, 72) * 2.6,
+        delay: seeded(i, 73) * 0.45,
+      })),
+    [],
+  )
+  const positions = useMemo(() => {
+    const arr = new Float32Array(SALT_COUNT * 3)
+    arr.fill(-100)
+    return arr
+  }, [])
+
+  useEffect(() => {
+    if (saltShake > 0) batch.current = { start: null }
+  }, [saltShake])
+
+  useEffect(() => {
+    if (import.meta.env.DEV) window.__salt = points
+  }, [])
+
+  useFrame((state) => {
+    const pts = points.current
+    if (!pts) return
+    const t = state.clock.elapsedTime
+    const b = batch.current
+    if (!b) {
+      pts.visible = false
+      return
+    }
+    if (b.start === null) b.start = t
+    const e = t - b.start
+    pts.visible = true
+    let alive = 0
+    const attr = pts.geometry.attributes.position
+    for (let i = 0; i < SALT_COUNT; i++) {
+      const g = grains[i]
+      const tt = e - g.delay
+      let y = -100
+      if (tt > 0) {
+        y = g.y0 - 0.5 * 30 * tt * tt
+        if (y < 2.35) y = -100 // landed inside the carton
+        else alive++
+      } else {
+        alive++
+      }
+      attr.setXYZ(i, g.x + Math.sin(t * 3 + i) * 0.02, y, g.z)
+    }
+    attr.needsUpdate = true
+    if (e > 0.5 && alive === 0) batch.current = null
+  })
+
+  return (
+    <points ref={points} raycast={() => null} visible={false}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+      </bufferGeometry>
+      <pointsMaterial
+        color="#fdfcf7"
+        size={0.05}
+        sizeAttenuation
+        transparent
+        opacity={0.95}
+        depthWrite={false}
+      />
+    </points>
   )
 }
 
