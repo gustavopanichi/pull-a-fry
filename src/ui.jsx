@@ -84,7 +84,7 @@ export function Cta() {
             d="M12 18 V6 M7 11 l5 -5 5 5"
             fill="none"
             stroke="currentColor"
-            strokeWidth="2"
+            strokeWidth="1.6"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
@@ -124,8 +124,19 @@ export function Hud() {
 
 function Carousel({ images, url }) {
   const track = useRef(null)
-  const scroll = (dir) =>
-    track.current?.scrollBy({ left: dir * track.current.clientWidth * 0.8, behavior: 'smooth' })
+  const scroll = (dir) => {
+    const el = track.current
+    if (!el) return
+    const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 8
+    const atStart = el.scrollLeft <= 8
+    if (dir > 0 && atEnd) {
+      el.scrollTo({ left: 0, behavior: 'smooth' }) // loop back to the start
+    } else if (dir < 0 && atStart) {
+      el.scrollTo({ left: el.scrollWidth, behavior: 'smooth' }) // and vice versa
+    } else {
+      el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: 'smooth' })
+    }
+  }
   return (
     <div className="carousel">
       <div className="carousel__track" ref={track}>
@@ -181,7 +192,7 @@ export function FortuneModal() {
           ×
         </button>
         <div className="modal__fortune">
-          {fry.isGolden ? '★ The Freshest Fry' : `Fry no. ${viewedCount + 1}`}
+          {fry.isGolden ? '★ The Freshest Fry' : `Fry #${viewedCount + 1}`}
         </div>
         <h2 className="modal__title">{project.title}</h2>
         <div className="modal__chips">

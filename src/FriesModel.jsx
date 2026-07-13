@@ -262,7 +262,7 @@ function Smoke() {
       )
       const sc = 0.45 + p * 1.0
       s.scale.set(sc, sc, 1)
-      s.material.opacity = active ? Math.sin(p * Math.PI) * 0.22 : 0
+      s.material.opacity = active ? Math.sin(p * Math.PI) * 0.34 : 0
     })
   })
 

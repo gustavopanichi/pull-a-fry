@@ -67,7 +67,7 @@ body {
   font-family: var(--body);
   color: var(--dark);
   overflow: hidden;
-  background: radial-gradient(120% 100% at 50% 38%, var(--yellow-light) 0%, #fdd141 45%, var(--yellow) 100%);
+  background: radial-gradient(120% 100% at 50% 42%, #ffeb7f 0%, #fbd64b 48%, #ffb800 100%);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -140,7 +140,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 18px;
-  background: radial-gradient(120% 100% at 50% 38%, var(--yellow-light) 0%, var(--yellow) 100%);
+  background: radial-gradient(120% 100% at 50% 42%, #ffeb7f 0%, #fbd64b 48%, #ffb800 100%);
   transition: opacity 0.6s ease, visibility 0.6s;
 }
 
@@ -297,7 +297,8 @@ body {
   justify-content: center;
   width: 44px;
   height: 44px;
-  border: 2px solid #10131f;
+  background: #10131f;
+  color: #fff;
   border-radius: 50%;
   overflow: hidden;
 }
@@ -318,12 +319,12 @@ body {
 }
 
 .cta p {
-  font-family: var(--display);
+  font-family: var(--body);
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.005em;
-  font-size: 1.05rem;
-  line-height: 1.35;
+  font-size: 0.95rem;
+  line-height: 1.4;
 }
 
 .cta strong {
@@ -375,23 +376,23 @@ body {
 }
 
 .btn--primary {
-  background: var(--red);
-  color: var(--cream);
+  background: #000;
+  color: #fff;
 }
 
 .btn--primary:hover {
-  filter: brightness(1.08);
+  filter: brightness(1.35);
 }
 
 .btn--ghost {
   background: transparent;
-  color: var(--dark);
-  border: 2px solid rgba(39, 37, 31, 0.35);
+  color: #000;
+  border: 2px solid #000;
 }
 
 .modal--gold .btn--ghost {
-  color: var(--gold);
-  border-color: rgba(255, 199, 44, 0.5);
+  color: var(--cream);
+  border-color: var(--cream);
 }
 
 .btn--refill {
@@ -449,7 +450,7 @@ body {
 .modal__fortune {
   font-weight: 700;
   font-size: 0.78rem;
-  letter-spacing: 0.14em;
+  letter-spacing: 0;
   text-transform: uppercase;
   color: var(--red);
   margin-bottom: 12px;
@@ -647,8 +648,8 @@ body {
 }
 
 .modal--gold .btn--primary {
-  background: var(--gold);
-  color: var(--brown);
+  background: #000;
+  color: #fff;
 }
 
 /* ---------- Golden flash ---------- */

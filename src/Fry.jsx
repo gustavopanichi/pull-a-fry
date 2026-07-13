@@ -88,7 +88,7 @@ export function Fry({ name, geometry, material, home, index, isGolden, clickable
     if (a.introStart === null) a.introStart = t
     const local = t - a.introStart
 
-    // 1 — gravity fall from the top of the screen, no bounce
+    // 1 — gravity fall from the top of the screen, with a small 5% rebound
     if (!a.landed) {
       const tl = local - fall.delay
       if (tl < 0) {
@@ -97,13 +97,22 @@ export function Fry({ name, geometry, material, home, index, isGolden, clickable
         return
       }
       m.visible = true
-      const y = home.y + fall.height - 0.5 * GRAVITY * tl * tl
-      if (y <= home.y) {
+      const T1 = fall.duration // touchdown time
+      const vReb = Math.sqrt(2 * GRAVITY * fall.height * 0.05) // 5% rebound apex
+      const T2 = (2 * vReb) / GRAVITY // rebound up + down
+      let y
+      if (tl < T1) {
+        y = home.y + fall.height - 0.5 * GRAVITY * tl * tl
+      } else if (tl < T1 + T2) {
+        const tr = tl - T1
+        y = home.y + vReb * tr - 0.5 * GRAVITY * tr * tr
+      } else {
         a.landed = true
         m.position.copy(home)
-      } else {
-        m.position.set(home.x, y, home.z)
-        const k = Math.min(tl / fall.duration, 1)
+      }
+      if (!a.landed) {
+        m.position.set(home.x, Math.max(y, home.y), home.z)
+        const k = Math.min(tl / T1, 1)
         m.rotation.set(fall.drift.x * k, fall.drift.y * k, fall.drift.z * k)
         return
       }
