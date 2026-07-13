@@ -30,7 +30,7 @@ export default function App() {
   // Tracks movement runs (extreme-to-extreme), since individual pointermove
   // deltas are tiny at high event rates.
   useEffect(() => {
-    const SWING = 50 // px a run must reverse by to count as a flip
+    const SWING = 28 // px a run must reverse by to count as a flip
     let anchorX = null
     let dir = 0
     let flips = []
@@ -52,9 +52,9 @@ export default function App() {
       } else if (dir === -1 && x < anchorX) {
         anchorX = x // extend the leftward run
       }
-      flips = flips.filter((t) => now - t < 1200)
-      if (flips.length >= 4 && now > cooldownUntil) {
-        cooldownUntil = now + 4000
+      flips = flips.filter((t) => now - t < 1600)
+      if (flips.length >= 3 && now > cooldownUntil) {
+        cooldownUntil = now + 3000
         flips = []
         useStore.getState().shakeSalt()
       }
