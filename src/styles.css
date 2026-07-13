@@ -200,7 +200,7 @@ body {
   top: clamp(14px, 2.6vh, 26px);
   left: 50%;
   transform: translateX(-50%);
-  z-index: 0; /* below the canvas so a pulled fry passes in front of the logos */
+  z-index: -1; /* behind everything — lettering, canvas, and all UI */
   display: flex;
   align-items: center;
   gap: 8px;
@@ -682,6 +682,11 @@ body {
 .modal--gold .btn--primary {
   background: #000;
   color: #fff;
+}
+
+.modal--gold .btn--primary:hover {
+  background: var(--yellow);
+  color: #10131f;
 }
 
 /* ---------- Golden flash ---------- */

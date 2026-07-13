@@ -240,11 +240,24 @@ export function Fry({ name, geometry, material, home, index, isGolden, clickable
       return
     }
 
-    // 5 — idle: settle home with a gentle sway
-    tmpVec.copy(home)
+    // 5 — idle: settle home with a gentle sway. A fry returning from the
+    // spotlight first slides back over the opening while staying high, then
+    // drops straight down — otherwise it would cut through the carton front.
     const hoverActive = hovered && clickable && !anySelected && phase === 'ready'
-    if (hoverActive) tmpVec.y += 0.14
-    easing.damp3(m.position, tmpVec, 0.18, dt)
+    if (m.position.y > home.y + 0.7) {
+      const overSlot =
+        Math.abs(m.position.z - home.z) < 0.2 && Math.abs(m.position.x - home.x) < 0.3
+      tmpVec.set(
+        home.x,
+        overSlot ? home.y : Math.max(m.position.y, home.y + 1.9),
+        home.z,
+      )
+      easing.damp3(m.position, tmpVec, 0.16, dt)
+    } else {
+      tmpVec.copy(home)
+      if (hoverActive) tmpVec.y += 0.14
+      easing.damp3(m.position, tmpVec, 0.18, dt)
+    }
     const swayT = t * fall.swaySpeed + fall.swayPhase
     tmpEuler.set(Math.sin(swayT * 0.8) * 0.012, 0, Math.sin(swayT) * 0.018)
     easing.dampE(m.rotation, tmpEuler, 0.25, dt)

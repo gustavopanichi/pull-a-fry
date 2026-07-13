@@ -27,24 +27,33 @@ export default function App() {
   }, [phase, friesCount])
 
   // Easter egg: shake the mouse rapidly side to side → a pinch of salt falls.
+  // Tracks movement runs (extreme-to-extreme), since individual pointermove
+  // deltas are tiny at high event rates.
   useEffect(() => {
-    let lastX = null
-    let lastDir = 0
+    const SWING = 50 // px a run must reverse by to count as a flip
+    let anchorX = null
+    let dir = 0
     let flips = []
     let cooldownUntil = 0
     const onMove = (e) => {
       const now = performance.now()
-      if (lastX !== null) {
-        const dx = e.clientX - lastX
-        if (Math.abs(dx) > 24) {
-          const dir = Math.sign(dx)
-          if (lastDir !== 0 && dir !== lastDir) flips.push(now)
-          lastDir = dir
-        }
+      const x = e.clientX
+      if (anchorX === null) anchorX = x
+      if (dir >= 0 && x < anchorX - SWING) {
+        if (dir === 1) flips.push(now)
+        dir = -1
+        anchorX = x
+      } else if (dir <= 0 && x > anchorX + SWING) {
+        if (dir === -1) flips.push(now)
+        dir = 1
+        anchorX = x
+      } else if (dir === 1 && x > anchorX) {
+        anchorX = x // extend the rightward run
+      } else if (dir === -1 && x < anchorX) {
+        anchorX = x // extend the leftward run
       }
-      lastX = e.clientX
-      flips = flips.filter((t) => now - t < 900)
-      if (flips.length >= 5 && now > cooldownUntil) {
+      flips = flips.filter((t) => now - t < 1200)
+      if (flips.length >= 4 && now > cooldownUntil) {
         cooldownUntil = now + 4000
         flips = []
         useStore.getState().shakeSalt()

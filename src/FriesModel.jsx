@@ -90,12 +90,6 @@ export function FriesModel() {
       clickableSet.add(cand.i)
     }
 
-    // Bring the clickable fries toward the front of the pile so they're
-    // easier to spot and grab.
-    for (const i of clickableSet) {
-      fries[i].home.z = 0.12 + Math.abs(fries[i].home.z)
-    }
-
     // Four hero fries (the golden one + three spread-out fortunes) rise well
     // above the pile — tall enough to overlap the title lettering.
     const heroes = [golden]
