@@ -57,11 +57,12 @@ export function Fry({ name, geometry, material, home, index, isGolden, clickable
       delay: reduced ? 0.9 + index * 0.012 : 1.05 + index * 0.045 + seeded(index, 1) * 0.25,
       height,
       duration: Math.sqrt((2 * height) / GRAVITY),
-      // slight tilt drift while airborne — no spin, just a natural lean
+      // slight tilt drift while airborne — kept small so no fry swings
+      // outside the carton rim on the way down
       drift: new THREE.Euler(
-        (seeded(index, 3) - 0.5) * 0.22,
-        (seeded(index, 4) - 0.5) * 0.3,
-        (seeded(index, 5) - 0.5) * 0.22,
+        (seeded(index, 3) - 0.5) * 0.1,
+        (seeded(index, 4) - 0.5) * 0.2,
+        (seeded(index, 5) - 0.5) * 0.1,
       ),
       swayPhase: seeded(index, 6) * Math.PI * 2,
       swaySpeed: 0.7 + seeded(index, 7) * 0.5,
@@ -129,10 +130,13 @@ export function Fry({ name, geometry, material, home, index, isGolden, clickable
           t,
           x: m.position.x,
           z: Math.max(m.position.z, 1.6),
-          planeL: new THREE.Plane(new THREE.Vector3(0, -1, 0), 1000),
-          planeR: new THREE.Plane(new THREE.Vector3(0, -1, 0), 1000),
+          planes: [
+            new THREE.Plane(new THREE.Vector3(0, -1, 0), 1000),
+            new THREE.Plane(new THREE.Vector3(0, -1, 0), 1000),
+            new THREE.Plane(new THREE.Vector3(0, -1, 0), 1000),
+          ],
         }
-        material.clippingPlanes = [a.eat.planeL, a.eat.planeR]
+        material.clippingPlanes = a.eat.planes
         material.clipShadows = true
       }
       const e = t - a.eat.t
@@ -146,18 +150,30 @@ export function Fry({ name, geometry, material, home, index, isGolden, clickable
       }
       // drop into frame while being eaten — the mouth is mid-screen
       easing.damp3(m.position, [a.eat.x, 4.2, a.eat.z], 0.16, dt)
-      // Jagged chomp: two opposing tilted planes intersect at a ragged ridge
-      // that tracks the fry. The tilt and ridge offset change with every bite.
-      const cutY = m.position.y + fryHeight / 2 - (bites * fryHeight) / 3 + fryHeight / 20
+      // Jagged chomp: three steeply-tilted planes intersect in a rough,
+      // toothy ridge that tracks the fry. Tilt, side and depth vary per bite.
       const side = bites % 2 ? 1 : -1
       const wob = seeded(index, 40 + bites)
-      const vx = m.position.x + side * (0.06 + wob * 0.1)
-      const vz = m.position.z
-      a.eat.planeL.normal.set(0.45 + wob * 0.25, -1, 0.22 * side).normalize()
-      a.eat.planeR.normal.set(-(0.4 + wob * 0.3), -1, -0.18 * side).normalize()
-      for (const p of [a.eat.planeL, a.eat.planeR]) {
-        p.constant = -(p.normal.x * vx + p.normal.y * cutY + p.normal.z * vz)
-      }
+      const wob2 = seeded(index, 60 + bites)
+      const cutY =
+        m.position.y +
+        fryHeight / 2 -
+        (bites * fryHeight) / 3 +
+        fryHeight / 20 +
+        (wob - 0.5) * fryHeight * 0.1
+      const [pA, pB, pC] = a.eat.planes
+      pA.normal.set(0.75 + wob * 0.45, -1, 0.4 * side).normalize()
+      pB.normal.set(-(0.65 + wob2 * 0.5), -1, -0.35 * side).normalize()
+      pC.normal.set(0.25 * side, -1, (0.7 + wob2 * 0.4) * -side).normalize()
+      const verts = [
+        [m.position.x + side * (0.05 + wob * 0.1), cutY, m.position.z],
+        [m.position.x - side * (0.04 + wob2 * 0.08), cutY - fryHeight * 0.04, m.position.z],
+        [m.position.x, cutY - fryHeight * 0.02, m.position.z + side * 0.05],
+      ]
+      a.eat.planes.forEach((p, i) => {
+        const [vx, vy, vz] = verts[i]
+        p.constant = -(p.normal.x * vx + p.normal.y * vy + p.normal.z * vz)
+      })
       // a little chomp jolt on every bite
       const bp = (e % BITE) / BITE
       const jolt = Math.exp(-bp * 7)
