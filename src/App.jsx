@@ -53,7 +53,7 @@ export default function App() {
         anchorX = x // extend the leftward run
       }
       flips = flips.filter((t) => now - t < 1600)
-      if (flips.length >= 3 && now > cooldownUntil) {
+      if (flips.length >= 5 && now > cooldownUntil) {
         cooldownUntil = now + 3000
         flips = []
         useStore.getState().shakeSalt()

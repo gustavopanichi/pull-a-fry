@@ -283,34 +283,10 @@ function Smoke() {
 const SALT_COUNT = 220
 const SALT_G = 6 // gentle fall so the grains actually read on screen
 
-// White grain with a soft dark rim so it stays visible on the yellow sky.
-function makeSaltTexture(size = 64) {
-  const canvas = document.createElement('canvas')
-  canvas.width = canvas.height = size
-  const ctx = canvas.getContext('2d')
-  const c = size / 2
-  const rim = ctx.createRadialGradient(c, c, c * 0.55, c, c, c)
-  rim.addColorStop(0, 'rgba(110, 94, 58, 0.5)')
-  rim.addColorStop(0.6, 'rgba(110, 94, 58, 0.22)')
-  rim.addColorStop(1, 'rgba(110, 94, 58, 0)')
-  ctx.fillStyle = rim
-  ctx.fillRect(0, 0, size, size)
-  const core = ctx.createRadialGradient(c, c, 0, c, c, c * 0.78)
-  core.addColorStop(0, 'rgba(255, 255, 255, 1)')
-  core.addColorStop(0.85, 'rgba(255, 255, 255, 0.98)')
-  core.addColorStop(1, 'rgba(255, 255, 255, 0)')
-  ctx.fillStyle = core
-  ctx.fillRect(0, 0, size, size)
-  const tex = new THREE.CanvasTexture(canvas)
-  tex.colorSpace = THREE.SRGBColorSpace
-  return tex
-}
-
 function Salt() {
   const saltShake = useStore((s) => s.saltShake)
   const points = useRef()
   const batch = useRef(null)
-  const saltTex = useMemo(() => makeSaltTexture(), [])
 
   const grains = useMemo(
     () =>
@@ -373,9 +349,9 @@ function Salt() {
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <pointsMaterial
-        map={saltTex}
-        size={0.11}
-        sizeAttenuation
+        color="#ffffff"
+        size={2}
+        sizeAttenuation={false}
         transparent
         opacity={1}
         depthWrite={false}
