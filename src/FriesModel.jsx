@@ -280,7 +280,7 @@ function Smoke() {
 
 // Easter egg: a pinch of salt rains from the top of the screen into the
 // carton when the mouse is shaken side to side.
-const SALT_COUNT = 220
+const SALT_COUNT = 440
 const SALT_G = 6 // gentle fall so the grains actually read on screen
 
 function Salt() {
