@@ -280,19 +280,45 @@ function Smoke() {
 
 // Easter egg: a pinch of salt rains from the top of the screen into the
 // carton when the mouse is shaken side to side.
-const SALT_COUNT = 150
+const SALT_COUNT = 220
+const SALT_G = 6 // gentle fall so the grains actually read on screen
+
+// White grain with a soft dark rim so it stays visible on the yellow sky.
+function makeSaltTexture(size = 64) {
+  const canvas = document.createElement('canvas')
+  canvas.width = canvas.height = size
+  const ctx = canvas.getContext('2d')
+  const c = size / 2
+  const rim = ctx.createRadialGradient(c, c, c * 0.55, c, c, c)
+  rim.addColorStop(0, 'rgba(110, 94, 58, 0.5)')
+  rim.addColorStop(0.6, 'rgba(110, 94, 58, 0.22)')
+  rim.addColorStop(1, 'rgba(110, 94, 58, 0)')
+  ctx.fillStyle = rim
+  ctx.fillRect(0, 0, size, size)
+  const core = ctx.createRadialGradient(c, c, 0, c, c, c * 0.78)
+  core.addColorStop(0, 'rgba(255, 255, 255, 1)')
+  core.addColorStop(0.85, 'rgba(255, 255, 255, 0.98)')
+  core.addColorStop(1, 'rgba(255, 255, 255, 0)')
+  ctx.fillStyle = core
+  ctx.fillRect(0, 0, size, size)
+  const tex = new THREE.CanvasTexture(canvas)
+  tex.colorSpace = THREE.SRGBColorSpace
+  return tex
+}
+
 function Salt() {
   const saltShake = useStore((s) => s.saltShake)
   const points = useRef()
   const batch = useRef(null)
+  const saltTex = useMemo(() => makeSaltTexture(), [])
 
   const grains = useMemo(
     () =>
       Array.from({ length: SALT_COUNT }, (_, i) => ({
         x: (seeded(i, 70) - 0.5) * 1.9,
         z: (seeded(i, 71) - 0.5) * 0.6,
-        y0: 6.8 + seeded(i, 72) * 2.6,
-        delay: seeded(i, 73) * 0.45,
+        y0: 5.6 + seeded(i, 72) * 2.0,
+        delay: seeded(i, 73) * 0.6,
       })),
     [],
   )
@@ -329,7 +355,7 @@ function Salt() {
       const tt = e - g.delay
       let y = -100
       if (tt > 0) {
-        y = g.y0 - 0.5 * 30 * tt * tt
+        y = g.y0 - 0.5 * SALT_G * tt * tt
         if (y < 2.35) y = -100 // landed inside the carton
         else alive++
       } else {
@@ -342,16 +368,16 @@ function Salt() {
   })
 
   return (
-    <points ref={points} raycast={() => null} visible={false}>
+    <points ref={points} raycast={() => null} visible={false} frustumCulled={false}>
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <pointsMaterial
-        color="#fdfcf7"
-        size={0.05}
+        map={saltTex}
+        size={0.11}
         sizeAttenuation
         transparent
-        opacity={0.95}
+        opacity={1}
         depthWrite={false}
       />
     </points>
